@@ -123,45 +123,6 @@ with open(data_path, "r") as f:
         data.append([line_splitted[2], line_splitted[3]])
 
 
-
-# # Split the data into training, validation, and test sets
-# train_data, temp_data = train_test_split(data, test_size=0.2, random_state=42)
-# val_data, test_data = train_test_split(temp_data, test_size=0.5, random_state=42)
-
-# # Extract Turkish and English sentences from the split data
-# train_turkish_sentences, train_english_sentences = zip(*train_data)
-# val_turkish_sentences, val_english_sentences = zip(*val_data)
-# test_turkish_sentences, test_english_sentences = zip(*test_data)
-
-# # Tokenize the sentences using a pre-trained tokenizer
-# tokenizer = AutoTokenizer.from_pretrained("Helsinki-NLP/opus-mt-en-tr")
-
-# # Tokenize and encode Turkish sentences
-# train_turkish_tokens = tokenizer(train_turkish_sentences, return_tensors="pt", padding=True, truncation=True)
-# val_turkish_tokens = tokenizer(val_turkish_sentences, return_tensors="pt", padding=True, truncation=True)
-# test_turkish_tokens = tokenizer(test_turkish_sentences, return_tensors="pt", padding=True, truncation=True)
-
-# # Tokenize and encode English sentences
-# train_english_tokens = tokenizer(train_english_sentences, return_tensors="pt", padding=True, truncation=True)
-# val_english_tokens = tokenizer(val_english_sentences, return_tensors="pt", padding=True, truncation=True)
-# test_english_tokens = tokenizer(test_english_sentences, return_tensors="pt", padding=True, truncation=True)
-
-# # Convert the tokenized sentences to PyTorch tensors
-# train_dataset = torch.utils.data.TensorDataset(
-#     train_turkish_tokens["input_ids"], train_turkish_tokens["attention_mask"],
-#     train_english_tokens["input_ids"], train_english_tokens["attention_mask"]
-# )
-
-# val_dataset = torch.utils.data.TensorDataset(
-#     val_turkish_tokens["input_ids"], val_turkish_tokens["attention_mask"],
-#     val_english_tokens["input_ids"], val_english_tokens["attention_mask"]
-# )
-
-# test_dataset = torch.utils.data.TensorDataset(
-#     test_turkish_tokens["input_ids"], test_turkish_tokens["attention_mask"],
-#     test_english_tokens["input_ids"], test_english_tokens["attention_mask"]
-# )
-
 train_dataset, val_dataset, test_dataset = prepare_data(data)
 
 # Example: Accessing a batch from the training dataset
@@ -188,29 +149,3 @@ num_epochs = 50
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-# Example usage:
-# Assuming you have train_loader, val_loader, and test_loader DataLoader instances
-train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-val_loader = DataLoader(val_dataset, batch_size=batch_size)
-test_loader = DataLoader(test_dataset, batch_size=batch_size)
-
-
-# Initialize and move model to device
-model = TransformerModel(vocab_size, d_model, nhead, num_encoder_layers, num_decoder_layers, device, max_len).to(device)
-
-# Define loss function and optimizer
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.AdamW(model.parameters(), lr=learning_rate)
-
-# Training loop
-for epoch in range(num_epochs):
-    train_loss = train(model, train_loader, criterion, optimizer, device)
-    val_loss = evaluate(model, val_loader, criterion, device)
-
-    print(f"Epoch {epoch + 1}/{num_epochs}, Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}")
-
-# Translation example
-source_sentence = "Hello, how are you?"
-translated_sentence = translate(model, source_sentence, max_len, tokenizer, device)
-print(f"Source: {source_sentence}")
-print(f"Translated: {translated_sentence}")
